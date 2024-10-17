@@ -1,4 +1,3 @@
-
 using Jordbruksverket.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +21,13 @@ namespace Jordbruksverket
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
                 options.JsonSerializerOptions.WriteIndented = true; // Optional for readable formatting
             });
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowLocalhost",
+                    builder => builder.WithOrigins("http://localhost:3000")
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader());
+            });
 
             var app = builder.Build();
 
@@ -36,13 +42,12 @@ namespace Jordbruksverket
 
             app.UseAuthorization();
 
-            app.MapGet("/owners", async (AppDbContext context) =>
-            {
-                var owners = await context.Owners
-                    .Include(o => o.Pets)
-                    .ToListAsync();
+            app.UseCors("AllowLocalhost");
 
-                return Results.Ok(owners);
+            app.MapGet("/pets", async (AppDbContext context) =>
+            {
+                var pets = await context.Pets.ToListAsync();
+                return Results.Ok(pets);
             });
 
 
