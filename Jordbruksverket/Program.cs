@@ -44,6 +44,14 @@ namespace Jordbruksverket
 
             app.UseCors("AllowLocalhost");
 
+            app.MapGet("/owners", async (AppDbContext context) =>
+            {
+                var owners = await context.Owners
+                    .Include(o => o.Pets)
+                    .ToListAsync();
+                return Results.Ok(owners);
+            });
+
             app.MapGet("/pets", async (AppDbContext context) =>
             {
                 var pets = await context.Pets.ToListAsync();
